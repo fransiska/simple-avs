@@ -91,3 +91,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+examples/*wav
+examples/speak.mp3
+
+*~

@@ -17,13 +17,20 @@ _EXAMPLES_DIR = os.path.dirname(__file__)
 _CONFIG_PATH = os.path.join(_EXAMPLES_DIR, 'client_config.yml')
 _REQUEST_PATH = os.path.join(_EXAMPLES_DIR, 'request.wav')
 
-#  import logging
-#  logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
+# import logging
+# ch = logging.StreamHandler()
+# formatter = logging.Formatter('%(asctime)s %(levelname)8s %(name)s | %(message)s')
+# ch.setFormatter(formatter)
+# logger = logging.getLogger('simpleavs')
+# logger.addHandler(ch)
+# logger.setLevel(logging.INFO)
 
 def main():
     """ basic example demonstrating client usage """
     avs = None
+
+    def handle_render_template(title):
+        print(title)
 
     def handle_speak(speak_directive):
         """ called when a speak directive is received from AVS """
@@ -47,10 +54,21 @@ def main():
 
     # handle the Speak directive event when sent from AVS
     avs.speech_synthesizer.speak_event += handle_speak
+    avs.template_runtime.render_template_event += handle_render_template    
 
     print('Connecting to AVS')
     avs.connect()
 
+    # Set language
+    header = {"namespace": "Settings",
+              "name": "SettingsUpdated",
+              "messageId": "12345"}
+    payload = {'settings':  [{
+        "key": "locale",
+        "value": "ja-JP"
+    }]}
+    avs._connection.send_event(header, include_state=False, payload=payload)
+   
     # send AVS a wav request (LE, 16bit, 16000 sample rate, mono)
     with io.open(_REQUEST_PATH, 'rb') as request_file:
         request_data = request_file.read()

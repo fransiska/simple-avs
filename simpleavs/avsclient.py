@@ -9,6 +9,7 @@ from .playbackcontroller import PlaybackController
 from .speaker import Speaker
 from .speechrecognizer import SpeechRecognizer
 from .speechsynthesizer import SpeechSynthesizer
+from .templateruntime import TemplateRuntime
 from .system import System
 from .idservice import IdService
 
@@ -28,6 +29,7 @@ class AvsClient(object):
         self.speech_recognizer = SpeechRecognizer(
             self._connection, self.id_service)
         self.speech_synthesizer = SpeechSynthesizer(self._connection)
+        self.template_runtime = TemplateRuntime(self._connection)        
         self.alerts = Alerts(self._connection)
         self.audio_player = AudioPlayer(self._connection)
         self.playback_controller = PlaybackController(self._connection)
