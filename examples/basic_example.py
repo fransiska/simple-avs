@@ -8,6 +8,7 @@ import sys
 import io
 import time
 import yaml
+import requests
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -46,9 +47,38 @@ def main():
         print('Notifying AVS that we have finished speaking')
         avs.speech_synthesizer.speech_finished(speak_directive.token)
 
+    def handle_authorized(config):
+        enable_templateruntime(config)
+
+    def handle_device_authorization(user_code,verification_uri):
+        print((user_code,verification_uri))
+
+    def enable_templateruntime(config):
+        """ Set capabilities to handle templateruntime
+        
+        Enable sending of RenderTemplate directive for devices with display
+        """
+        
+        data = '{"envelopeVersion": "20160207","capabilities": [{"type": "AlexaInterface","interface": "TemplateRuntime","version": "1.0"}]}'
+        headers = {"Content-Type": "application/json",  
+                   "Content-Length": str(len(data.encode('utf-8'))),
+                   "Authorization": "Bearer " +  str(config['access_token'])}
+        r = requests.put('https://api.amazonalexa.com/v1/devices/@self/capabilities', headers=headers, data=data)
+
     with io.open(_CONFIG_PATH, 'r') as cfile:
         config = yaml.load(cfile)
 
+    # Get a refresh token if needed
+    if 'refresh_token' not in config:
+        authorization = simpleavs.Authorization()
+        authorization.authorized_event += handle_authorized
+        authorization.device_authorization_event += handle_device_authorization
+        config = authorization.authorize(config)
+        if config == None:
+            return
+        with open(_CONFIG_PATH,'w') as outfile:
+            yaml.dump(config, outfile)
+        
     # AvsClient requires a dict with client_id, client_secret, refresh_token
     avs = simpleavs.AvsClient(config)
 

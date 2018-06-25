@@ -239,7 +239,6 @@ class AvsConnection(object):
                 seconds_since(self._auth.latest_token_time) > 3570):
             payload = {
                 'client_id': self._auth.client_id,
-                'client_secret': self._auth.client_secret,
                 'refresh_token': self._auth.refresh_token,
                 'grant_type': 'refresh_token',
             }
